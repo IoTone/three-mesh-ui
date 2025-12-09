@@ -24,6 +24,7 @@ window.addEventListener("resize", onWindowResize);
 function init() {
 	scene = new THREE.Scene();
 	scene.background = new THREE.Color(0x505050);
+	// camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 40);
 
 	camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 100);
 
@@ -48,14 +49,22 @@ function init() {
 
 	controls = new OrbitControls(camera, renderer.domElement);
 	camera.position.set(0, 1.6, 0);
+	const cameraGroup = new THREE.Group();
+	cameraGroup.position.set(0, -1, 1.5); // Set the initial VR Headset Position.
+
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
 	renderer.xr.addEventListener("sessionstart", function (event) {
 		const session = event.target;
+		scene.add(cameraGroup);
+		cameraGroup.add(camera);
 		session.addEventListener("end", function () {
 			console.log("XR session ended");
+			scene.remove(cameraGroup);
+			cameraGroup.remove(camera);
 		});
+		console.log("camera position ", camera.position);
 		const referenceSpace = renderer.xr.getReferenceSpace();
 		console.log(
 			"XR Reference Space Type:",
@@ -195,6 +204,16 @@ function loop() {
 	// to improve performance
 	ThreeMeshUI.update();
 
-	controls.update();
-	renderer.render(scene, camera);
+	// controls.update();
+	// renderer.render(scene, camera);
+
+	// CRITICAL: use the XR camera when in AR/VR
+	if (renderer.xr.isPresenting) {
+		// This automatically uses the correct stereo cameras with proper head pose
+		renderer.render(scene, renderer.xr.getCamera());
+	} else {
+		// Normal desktop mode – use your original camera + orbit controls
+		controls.update();
+		renderer.render(scene, camera);
+	}
 }
