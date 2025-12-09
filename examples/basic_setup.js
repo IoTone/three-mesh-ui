@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BoxLineGeometry } from "three/examples/jsm/geometries/BoxLineGeometry.js";
+import { TeapotGeometry } from "three/examples/jsm/geometries/TeapotGeometry.js";
 
 import ThreeMeshUI from "../src/three-mesh-ui.js";
 
@@ -36,19 +37,44 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 
 	controls = new OrbitControls(camera, renderer.domElement);
-	camera.position.set(0, 1.6, 0);
+	camera.position.set(0, 1.6, 1.75);
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
-	// ROOM
-
+	// roomGenerator()
+	// TODO: make this into a utility function to use in all samples
+	// When you need a virtual environment that shows you are in mixed reality
+	// but relatively low polygon and simple
+	//
+	// It would be interesting to have some variety generated randomly in room architecture
+	//
+	// TODO:
+	// Default: a wall in front of the user, and a floor, nothing to the left or right
+	// and some decorations behind the user
+	// https://threejs.org/docs/#BoxLineGeometry
+	//
+	// alt light gray: #c5c5c4
+	// gray: 0x808080
 	const room = new THREE.LineSegments(
 		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
-		new THREE.LineBasicMaterial({ color: 0x808080 }),
+		new THREE.LineBasicMaterial({
+			color: 0x808080,
+			opacity: 0.3,
+			transparent: true,
+		}),
 	);
 
-	scene.add(room);
+	// threejs.org/docs/#TeapotGeometry
+	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
+	const geometry = new TeapotGeometry(0.25, 18);
+	const material = new THREE.MeshBasicMaterial({
+		wireframe: true,
+		color: 0x00ff00,
+	}); // new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+	const teapot = new THREE.Mesh(geometry, material);
 
+	scene.add(room);
+	scene.add(teapot);
 	// TEXT PANEL
 
 	makeTextPanel();
@@ -86,13 +112,16 @@ function makeTextPanel() {
 		}),
 
 		new ThreeMeshUI.Text({
+			// TODO: Need a font that supports hirigana/katakana/kanji はじめまして
+			// MSDF Glyph doesn't !?
 			content:
-				" As well as multi font size lines with consistent vertical spacing",
+				" As well as multi font size lines with consistent vertical spacing. :)",
 			fontSize: 0.08,
 		}),
 	);
 
 	return;
+	// TODO: fix this as it causes a warning in the webpack stage, unreachable
 	container.onAfterUpdate = function () {
 		console.log(container.lines);
 
