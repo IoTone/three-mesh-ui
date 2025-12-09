@@ -37,7 +37,7 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 
 	controls = new OrbitControls(camera, renderer.domElement);
-	camera.position.set(0, 1.6, 1.75);
+	camera.position.set(0, 1.6, 0);
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
@@ -58,15 +58,15 @@ function init() {
 	const room = new THREE.LineSegments(
 		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
 		new THREE.LineBasicMaterial({
-			color: 0x808080,
-			opacity: 0.3,
+			color: 0x00ff00, // 0x808080,
+			opacity: 0.65,
 			transparent: true,
 		}),
 	);
 
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
-	const geometry = new TeapotGeometry(0.25, 18);
+	const geometry = new TeapotGeometry(0.25, 18).translate(0, -1.5, -1);
 	const material = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0x00ff00,
