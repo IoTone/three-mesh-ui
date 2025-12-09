@@ -33,6 +33,8 @@ function init() {
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(WIDTH, HEIGHT);
 	renderer.xr.enabled = true;
+	// Ensure XR reference space is 'local-floor' so the camera starts at standing height (~1.6m)
+	renderer.xr.setReferenceSpaceType("local-floor");
 	document.body.appendChild(ARButton.createButton(renderer));
 	document.body.appendChild(renderer.domElement);
 
