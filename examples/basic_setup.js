@@ -35,7 +35,15 @@ function init() {
 	renderer.xr.enabled = true;
 	// Ensure XR reference space is 'local-floor' so the camera starts at standing height (~1.6m)
 	renderer.xr.setReferenceSpaceType("local-floor");
-	document.body.appendChild(ARButton.createButton(renderer));
+	const arButton = ARButton.createButton(renderer, {
+		requiredFeatures: ["hit-test"], // Optional: Add if you need hit-testing for AR placement
+		optionalFeatures: ["dom-overlay"],
+		sessionInit: {
+			// Explicitly request local-floor here too
+			requiredFeatures: ["local-floor"],
+		},
+	});
+	document.body.appendChild(arButton);
 	document.body.appendChild(renderer.domElement);
 
 	controls = new OrbitControls(camera, renderer.domElement);
@@ -43,6 +51,24 @@ function init() {
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
+	renderer.xr.addEventListener("sessionstart", function (event) {
+		const session = event.target;
+		session.addEventListener("end", function () {
+			console.log("XR session ended");
+		});
+		const referenceSpace = renderer.xr.getReferenceSpace();
+		console.log(
+			"XR Reference Space Type:",
+			referenceSpace ? referenceSpace.spaceType : "Unknown",
+		);
+		if (referenceSpace && referenceSpace.spaceType !== "local-floor") {
+			console.warn(
+				"Expected local-floor but got:",
+				referenceSpace.spaceType,
+				"- Camera may be at floor level. Calibrate your device or check browser support.",
+			);
+		}
+	});
 	// roomGenerator()
 	// TODO: make this into a utility function to use in all samples
 	// When you need a virtual environment that shows you are in mixed reality
