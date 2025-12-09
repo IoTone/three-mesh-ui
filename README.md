@@ -4,9 +4,23 @@ This is a fork.  The goal of this fork is to explore common building blocks for 
 
 Instead of a pure VR approach, we would like to think about the realistic use case being for Mixed Reality.  This is an extremely impressive project created by the original author, and these ideas haven't been touched in a few years.  To bring things forward into a world where we may have 3-5 real mixed reality devices on the market in 2026 and probably doubling each year beyond, it is important to try to stake out ground on top of WebXR as the desireable alternative to vendor driven tools and FANG ecosystem.  Ultimately, we want for the experiences to exist easily anywhere XR is supported.  At the moment, it appears nobody outside of FANG and well funded publicly traded gaming tools vendors have addressed standard components for building traditional UIs in XR.   This means one builds UIs from scratch or fallback to whatever a platform supports natively.  
 
+## Build
+
+In practice there is a bug when you run : npm run Start
+
+to run, use: NODE_OPTIONS=--openssl-legacy-provider npm run start
+
+## Deployment
+
+NODE_OPTIONS=--openssl-legacy-provider npm run build-dist
+
+Then decide how you want to serve this over HTTPS.  We host on Cloudflare.
+
 ## Status
 
 In Development
+
+Original demo is here: https://felixmariotto.github.io/three-mesh-ui/#basic_setup
 
 **Original Fork READMME is below**
 
