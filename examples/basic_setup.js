@@ -23,16 +23,26 @@ window.addEventListener("resize", onWindowResize);
 
 function init() {
 	scene = new THREE.Scene();
-	// scene.background = new THREE.Color(0x505050);
+	scene.background = new THREE.Color(0x505050);
 
-	camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 100);
+	camera = new THREE.PerspectiveCamera(
+		50,
+		window.innerWidth / window.innerHeight,
+		0.1,
+		10,
+	);
+	camera.position.set(0, 1.6, 3);
+	// camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 100);
+
+	// renderer = new THREE.WebGPURenderer( { antialias: true, forceWebGL: true, colorBufferType: THREE.UnsignedByteType, multiview: true } );
 
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
 		alpha: true,
 	});
 	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(WIDTH, HEIGHT);
+	// renderer.setSize(WIDTH, HEIGHT);
+	renderer.setSize(window.innerWidth, window.innerHeight);
 	renderer.xr.enabled = true;
 	// Ensure XR reference space is 'local-floor' so the camera starts at standing height (~1.6m)
 	// renderer.xr.setReferenceSpaceType("local-floor");
@@ -55,14 +65,14 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 	renderer.xr.setReferenceSpaceType("local-floor");
 
-	controls = new OrbitControls(camera, renderer.domElement);
-	camera.position.set(0, 1.6, 0);
+	// controls = new OrbitControls(camera, renderer.domElement);
+	// camera.position.set(0, 1.6, 0);
 	/*
 	const cameraGroup = new THREE.Group();
 	cameraGroup.position.set(0, -1, 1.5); // Set the initial VR Headset Position.
 	*/
-	controls.target = new THREE.Vector3(0, 1, -1.8);
-	controls.update();
+	// controls.target = new THREE.Vector3(0, 1, -1.8);
+	// controls.update();
 
 	const sun = new THREE.DirectionalLight(0xffffcc);
 	sun.position.set(0, 1, 0);
@@ -92,7 +102,11 @@ function init() {
 			transparent: true,
 		}),
 	); */
-
+	const room = new THREE.LineSegments(
+		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
+		new THREE.LineBasicMaterial({ color: 0xbcbcbc }),
+	);
+	scene.add(room);
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
 	const geometry = new TeapotGeometry(0.25, 18).translate(0, 0.25, 0);
@@ -247,6 +261,6 @@ function loop() {
 	// to improve performance
 	ThreeMeshUI.update();
 
-	controls.update();
+	// controls.update();
 	renderer.render(scene, camera);
 }
