@@ -49,13 +49,15 @@ function init() {
 
 	controls = new OrbitControls(camera, renderer.domElement);
 	camera.position.set(0, 1.6, 0);
+	/*
 	const cameraGroup = new THREE.Group();
 	cameraGroup.position.set(0, -1, 1.5); // Set the initial VR Headset Position.
-
+	*/
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
 	renderer.xr.addEventListener("sessionstart", function (event) {
+		/*
 		const session = event.target;
 		scene.add(cameraGroup);
 		cameraGroup.add(camera);
@@ -64,6 +66,7 @@ function init() {
 			scene.remove(cameraGroup);
 			cameraGroup.remove(camera);
 		});
+		*/
 		console.log("camera position ", camera.position);
 		const referenceSpace = renderer.xr.getReferenceSpace();
 		console.log(
@@ -93,17 +96,17 @@ function init() {
 	// alt light gray: #c5c5c4
 	// gray: 0x808080
 	const room = new THREE.LineSegments(
-		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
+		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 0 /* 3 */, 0),
 		new THREE.LineBasicMaterial({
 			color: 0x00ff00, // 0x808080,
-			opacity: 0.65,
+			opacity: 0.35,
 			transparent: true,
 		}),
 	);
 
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
-	const geometry = new TeapotGeometry(0.25, 18).translate(0, -1.5, -1);
+	const geometry = new TeapotGeometry(0.25, 18).translate(0, 0, 0);
 	const material = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0x00ff00,
