@@ -93,7 +93,26 @@ function init() {
 	makeTextPanel();
 	makeGrass();
 	makePictureFrame(0, 1.5, -3);
-	//
+
+	const floorGometry = new THREE.PlaneGeometry(4, 4);
+	const floorMaterial = new THREE.MeshStandardMaterial({
+		color: 0x222222,
+		roughness: 1.0,
+		metalness: 0.0,
+	});
+	const floor = new THREE.Mesh(floorGometry, floorMaterial);
+	floor.rotation.x = -Math.PI / 2;
+	scene.add(floor);
+
+	const grid = new THREE.GridHelper(10, 20, 0x111111, 0x111111);
+	grid.material.depthTest = false; // avoid z-fighting
+	scene.add(grid);
+
+	scene.add(new THREE.HemisphereLight(0x888877, 0x777788));
+
+	const light = new THREE.DirectionalLight(0xffffff, 0.5);
+	light.position.set(0, 4, 0);
+	scene.add(light);
 
 	renderer.setAnimationLoop(loop);
 }
