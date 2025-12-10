@@ -65,14 +65,14 @@ function init() {
 	document.body.appendChild(renderer.domElement);
 	renderer.xr.setReferenceSpaceType("local-floor");
 
-	// controls = new OrbitControls(camera, renderer.domElement);
-	// camera.position.set(0, 1.6, 0);
+	controls = new OrbitControls(camera, renderer.domElement);
+	camera.position.set(0, 2.6, 0);
 	/*
 	const cameraGroup = new THREE.Group();
 	cameraGroup.position.set(0, -1, 1.5); // Set the initial VR Headset Position.
 	*/
-	// controls.target = new THREE.Vector3(0, 1, -1.8);
-	// controls.update();
+	controls.target = new THREE.Vector3(0, 1, -1.8);
+	controls.update();
 
 	const sun = new THREE.DirectionalLight(0xffffcc);
 	sun.position.set(0, 1, 0);
@@ -102,14 +102,16 @@ function init() {
 			transparent: true,
 		}),
 	); */
+	/*
 	const room = new THREE.LineSegments(
 		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
 		new THREE.LineBasicMaterial({ color: 0xbcbcbc }),
 	);
 	scene.add(room);
+	*/
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
-	const geometry = new TeapotGeometry(0.25, 18).translate(0, 0.25, 0);
+	const geometry = new TeapotGeometry(0.25, 18).translate(0, -0.75, 0);
 	const material = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0x00ff00,
@@ -122,7 +124,7 @@ function init() {
 
 	makeTextPanel();
 	makeGrass();
-	makePictureFrame(0, 1.5, -3);
+	makePictureFrame(0, 0.5, -3);
 
 	renderer.setAnimationLoop(loop);
 }
@@ -141,7 +143,7 @@ function makeGrass() {
 		map: tex,
 	});
 	const mesh = new THREE.Mesh(geo, mat);
-	mesh.position.set(0, 0, 0);
+	mesh.position.set(0, -1, 0);
 	mesh.rotation.set(Math.PI / -2, 0, 0);
 	scene.add(mesh);
 }
@@ -171,7 +173,7 @@ function makeTextPanel() {
 		// interLine: 0,
 	});
 
-	container.position.set(0, 1, -1.8);
+	container.position.set(0, 0.25, -1.8);
 	container.rotation.x = -0.55;
 	scene.add(container);
 
