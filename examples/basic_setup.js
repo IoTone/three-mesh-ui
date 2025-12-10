@@ -23,8 +23,7 @@ window.addEventListener("resize", onWindowResize);
 
 function init() {
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x505050);
-	// camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 40);
+	// scene.background = new THREE.Color(0x505050);
 
 	camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 100);
 
@@ -35,16 +34,8 @@ function init() {
 	renderer.setSize(WIDTH, HEIGHT);
 	renderer.xr.enabled = true;
 	// Ensure XR reference space is 'local-floor' so the camera starts at standing height (~1.6m)
-	renderer.xr.setReferenceSpaceType("local-floor");
-	const arButton = ARButton.createButton(renderer, {
-		requiredFeatures: ["hit-test"], // Optional: Add if you need hit-testing for AR placement
-		optionalFeatures: ["dom-overlay"],
-		sessionInit: {
-			// Explicitly request local-floor here too
-			requiredFeatures: ["local-floor"],
-		},
-	});
-	document.body.appendChild(arButton);
+	// renderer.xr.setReferenceSpaceType("local-floor");
+	document.body.appendChild(ARButton.createButton(renderer));
 	document.body.appendChild(renderer.domElement);
 
 	controls = new OrbitControls(camera, renderer.domElement);
@@ -56,31 +47,10 @@ function init() {
 	controls.target = new THREE.Vector3(0, 1, -1.8);
 	controls.update();
 
-	renderer.xr.addEventListener("sessionstart", function (event) {
-		/*
-		const session = event.target;
-		scene.add(cameraGroup);
-		cameraGroup.add(camera);
-		session.addEventListener("end", function () {
-			console.log("XR session ended");
-			scene.remove(cameraGroup);
-			cameraGroup.remove(camera);
-		});
-		*/
-		console.log("camera position ", camera.position);
-		const referenceSpace = renderer.xr.getReferenceSpace();
-		console.log(
-			"XR Reference Space Type:",
-			referenceSpace ? referenceSpace.spaceType : "Unknown",
-		);
-		if (referenceSpace && referenceSpace.spaceType !== "local-floor") {
-			console.warn(
-				"Expected local-floor but got:",
-				referenceSpace.spaceType,
-				"- Camera may be at floor level. Calibrate your device or check browser support.",
-			);
-		}
-	});
+	const sun = new THREE.DirectionalLight(0xffffcc);
+	sun.position.set(0, 1, 0);
+	scene.add(sun);
+
 	// roomGenerator()
 	// TODO: make this into a utility function to use in all samples
 	// When you need a virtual environment that shows you are in mixed reality
@@ -95,37 +65,70 @@ function init() {
 	//
 	// alt light gray: #c5c5c4
 	// gray: 0x808080
+	//
+	/*
 	const room = new THREE.LineSegments(
-		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 0 /* 3 */, 0),
+		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
 		new THREE.LineBasicMaterial({
 			color: 0x00ff00, // 0x808080,
 			opacity: 0.35,
 			transparent: true,
 		}),
-	);
+	); */
 
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
-	const geometry = new TeapotGeometry(0.25, 18).translate(0, 0, 0);
+	const geometry = new TeapotGeometry(0.25, 18).translate(0, 0.25, 0);
 	const material = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0x00ff00,
 	}); // new THREE.MeshBasicMaterial({ color: 0x00ff00 });
 	const teapot = new THREE.Mesh(geometry, material);
 
-	scene.add(room);
+	// scene.add(room);
 	scene.add(teapot);
 	// TEXT PANEL
 
 	makeTextPanel();
-
+	makeGrass();
+	makePictureFrame(0, 1.5, -3);
 	//
 
 	renderer.setAnimationLoop(loop);
 }
 
 //
+function makeGrass() {
+	const tex = new THREE.TextureLoader().load(
+		"https://upload.wikimedia.org/wikipedia/commons/4/4c/Grass_Texture.png",
+	);
+	tex.anisotropy = 32;
+	tex.repeat.set(100, 100);
+	tex.wrapT = THREE.RepeatWrapping;
+	tex.wrapS = THREE.RepeatWrapping;
+	const geo = new THREE.PlaneBufferGeometry(5, 5);
+	const mat = new THREE.MeshLambertMaterial({
+		map: tex,
+	});
+	const mesh = new THREE.Mesh(geo, mat);
+	mesh.position.set(0, 0, 0);
+	mesh.rotation.set(Math.PI / -2, 0, 0);
+	scene.add(mesh);
+}
 
+function makePictureFrame(xoffset, yoffset, zoffset) {
+	const points = [];
+	points.push(new THREE.Vector3(-1 + xoffset, 1 + yoffset, 0 + zoffset));
+	points.push(new THREE.Vector3(1 + xoffset, 1 + yoffset, 0 + zoffset));
+	points.push(new THREE.Vector3(1 + xoffset, -1 + yoffset, 0 + zoffset));
+	points.push(new THREE.Vector3(-1 + xoffset, -1 + yoffset, 0 + zoffset));
+	points.push(new THREE.Vector3(-1 + xoffset, 1 + yoffset, 0 + zoffset)); // Close the loop
+
+	const geometry = new THREE.BufferGeometry().setFromPoints(points);
+	const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+	const line = new THREE.LineLoop(geometry, material); // Or THREE.LineSegments
+	scene.add(line);
+}
 function makeTextPanel() {
 	const container = new ThreeMeshUI.Block({
 		width: 1.3,
@@ -207,16 +210,6 @@ function loop() {
 	// to improve performance
 	ThreeMeshUI.update();
 
-	// controls.update();
-	// renderer.render(scene, camera);
-
-	// CRITICAL: use the XR camera when in AR/VR
-	if (renderer.xr.isPresenting) {
-		// This automatically uses the correct stereo cameras with proper head pose
-		renderer.render(scene, renderer.xr.getCamera());
-	} else {
-		// Normal desktop mode – use your original camera + orbit controls
-		controls.update();
-		renderer.render(scene, camera);
-	}
+	controls.update();
+	renderer.render(scene, camera);
 }
