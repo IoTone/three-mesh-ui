@@ -29,6 +29,7 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
+		alpha: true,
 	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(WIDTH, HEIGHT);
