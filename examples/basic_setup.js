@@ -23,7 +23,7 @@ window.addEventListener("resize", onWindowResize);
 
 function init() {
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x505050);
+	// scene.background = new THREE.Color(0x505050);
 
 	camera = new THREE.PerspectiveCamera(
 		50,
@@ -102,13 +102,13 @@ function init() {
 			transparent: true,
 		}),
 	); */
-	/*
+
 	const room = new THREE.LineSegments(
 		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
 		new THREE.LineBasicMaterial({ color: 0xbcbcbc }),
 	);
 	scene.add(room);
-	*/
+
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
 	const geometry = new TeapotGeometry(0.25, 18).translate(0, -0.75, 0);
