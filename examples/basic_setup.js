@@ -104,14 +104,14 @@ function init() {
 	); */
 
 	const room = new THREE.LineSegments(
-		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
+		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 0, 0),
 		new THREE.LineBasicMaterial({ color: 0xbcbcbc }),
 	);
 	scene.add(room);
 
 	// threejs.org/docs/#TeapotGeometry
 	// TODO: Improve this: https://github.com/mrdoob/three.js/blob/master/examples/webgl_geometry_teapot.html
-	const geometry = new TeapotGeometry(0.25, 18).translate(0, -0.75, 0);
+	const geometry = new TeapotGeometry(0.15, 18).translate(0, -0.75, 0);
 	const material = new THREE.MeshBasicMaterial({
 		wireframe: true,
 		color: 0x00ff00,
