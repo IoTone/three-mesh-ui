@@ -7,7 +7,7 @@ const ESLintPlugin = require("eslint-webpack-plugin");
 
 // data in format [ JS file name => demo title in examples page ]
 const pages = [
-	["basic_setup", "basic setup"],
+	["basic_setup", "*basic setup"],
 	// [ 'vertical_alignment', 'vertical_alignment' ],
 	["preloaded_font", "preloaded font"],
 	["nested_blocks", "nested blocks"],
@@ -31,7 +31,7 @@ const pages = [
 	["content_direction", ".contentDirection"],
 	["justify_content", ".justifyContent"],
 	["align_items", ".alignItems"],
-	["alt_passthru_webxr", "alt passthru webxr"],
+	["alt_passthru_webxr", "*alt passthru webxr"],
 ];
 
 // create one config for each of the data set above
@@ -105,7 +105,10 @@ const webpackConfig = (env) => {
 				directory: path.join(__dirname, "dist"),
 				publicPath: "/",
 			},
-
+			host: '0.0.0.0',
+			server: 'https',
+			// compress: true,
+			// port: 8081,
 			// As eslint is ran during dev, only overlay errors and not warnings
 			client: {
 				overlay: {
