@@ -1,6 +1,6 @@
 {
   "name": "three-mesh-ui",
-  "version": "6.5.4",
+  "version": "7.0.1",
   "description": "a library on top of three.js to help in creating 3D user interfaces",
   "engines": {
     "node": "x.x.x"
@@ -25,6 +25,7 @@
     "ui",
     "user-interface",
     "vr",
+    "xr",
     "ar",
     "virtual reality",
     "webXR"

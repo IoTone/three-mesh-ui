@@ -42,6 +42,7 @@ function init() {
 
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
+		alpha: true,
 	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(WIDTH, HEIGHT);
@@ -56,9 +57,13 @@ function init() {
 
 	// ROOM
 
-	const room = new THREE.LineSegments(
+	/* const room = new THREE.LineSegments(
 		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 3, 0),
 		new THREE.LineBasicMaterial({ color: 0x808080 }),
+	); */
+	const room = new THREE.LineSegments(
+		new BoxLineGeometry(6, 6, 6, 10, 10, 10).translate(0, 0, 0),
+		new THREE.LineBasicMaterial({ color: 0xbcbcbc }),
 	);
 
 	scene.add(room);

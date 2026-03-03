@@ -4,6 +4,7 @@ import { BoxLineGeometry } from "three/examples/jsm/geometries/BoxLineGeometry.j
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import ThreeMeshUI from "../src/three-mesh-ui.js";
+import { TeapotGeometry } from "three/examples/jsm/geometries/TeapotGeometry.js";
 
 // assets URLs
 
@@ -24,18 +25,34 @@ window.addEventListener("resize", onWindowResize);
 
 function init() {
 	scene = new THREE.Scene();
-	scene.background = new THREE.Color(0x505050);
+	// scene.background = new THREE.Color(0x505050);
 
 	camera = new THREE.PerspectiveCamera(60, WIDTH / HEIGHT, 0.1, 100);
 
 	renderer = new THREE.WebGLRenderer({
 		antialias: true,
+		alpha: true,
 	});
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(WIDTH, HEIGHT);
 	renderer.xr.enabled = true;
-	document.body.appendChild(ARButton.createButton(renderer));
+	const arButton = ARButton.createButton(renderer, {
+		// requiredFeatures: ["hit-test"], // Optional: Add if you need hit-testing for AR placement
+		optionalFeatures: ["dom-overlay"],
+		sessionInit: {
+			// Explicitly request local-floor here too
+			requiredFeatures: [
+				"local-floor",
+				"bounded-floor",
+				"hand-tracking",
+				"layers",
+			],
+		},
+	});
+	document.body.appendChild(arButton);
+	// document.body.appendChild(ARButton.createButton(renderer));
 	document.body.appendChild(renderer.domElement);
+	renderer.xr.setReferenceSpaceType("local-floor");
 
 	controls = new OrbitControls(camera, renderer.domElement);
 	camera.position.set(0, 1.6, 0);
