@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <title>three-mesh-ui demo — module, fixed font loading</title>
+
+        <!-- es-module-shims for importmap support in older browsers -->
+        <script
+            async
+            src="http://localhost:8010/proxy/es-module-shims@1.6.3/dist/es-module-shims.js"
+        ></script>
+
+        <!-- Import map: pinned versions known to exist -->
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "http://localhost:8010/proxy/three@0.132.2/build/three.module.js",
+                    "three-mesh-ui": "http://localhost:8010/proxy/three-mesh-ui@6.4.0/build/three-mesh-ui.module.js",
+                    "three/examples/": "http://localhost:8010/proxy/three@0.132.2/examples/jsm/"
+                }
+            }
+        </script>
+
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                background: #111;
+                color: #fff;
+                font-family: Arial, sans-serif;
+            }
+            #overlay {
+                position: absolute;
+                left: 12px;
+                top: 12px;
+                z-index: 10;
+                pointer-events: none;
+            }
+            #controls {
+                pointer-events: auto;
+                display: flex;
+                gap: 8px;
+                align-items: center;
+            }
+            #info {
+                margin-bottom: 8px;
+                font-size: 14px;
+                color: #ddd;
+            }
+            button {
+                padding: 8px 12px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            canvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="overlay">
+            <div id="info">
+                three-mesh-ui demo — rotating cube, 3D text, login panel, glTF
+                loader
+            </div>
+            <div id="controls">
+                <button id="enter-ar">Enter AR</button>
+                <button id="toggle-ui">Toggle UI</button>
+            </div>
+        </div>
+
+        <script type="module">
+            import * as THREE from "three";
+            import * as ThreeMeshUI from "three-mesh-ui";
+            import { GLTFLoader } from "three/examples/loaders/GLTFLoader.js";
+            import { ARButton } from "three/examples/webxr/ARButton.js";
+
+            // Renderer, scene, camera
+            const renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true,
+            });
+            renderer.setPixelRatio(window.devicePixelRatio || 1);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.xr.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x111111);
+
+            const camera = new THREE.PerspectiveCamera(
+                50,
+                window.innerWidth / window.innerHeight,
+                0.01,
+                100,
+            );
+            camera.position.set(0, 1.6, 3);
+
+            // Lights
+            const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+            hemi.position.set(0, 2, 0);
+            scene.add(hemi);
+            const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+            dir.position.set(3, 10, 10);
+            scene.add(dir);
+
+            // Rotating cube
+            const cubeGeo = new THREE.BoxGeometry(0.6, 0.6, 0.6);
+            const cubeMat = new THREE.MeshStandardMaterial({
+                color: 0x2194ce,
+                roughness: 0.4,
+                metalness: 0.1,
+            });
+            const cube = new THREE.Mesh(cubeGeo, cubeMat);
+            cube.position.set(-0.9, 1.2, -1.5);
+            scene.add(cube);
+
+            // UI root
+            const uiRoot = new THREE.Group();
+            uiRoot.position.set(0, 1.4, -1.5);
+            scene.add(uiRoot);
+
+            let loginBtnBlock = null;
+            let uiVisible = true;
+
+            // --- Robust MSDF font loader: fetch JSON + load PNG as THREE.Texture ---
+            async function loadMsdfFont(jsonUrl, pngUrl) {
+                const res = await fetch(jsonUrl);
+                if (!res.ok)
+                    throw new Error("Failed to fetch font JSON: " + res.status);
+                const fontJson = await res.json();
+
+                const loader = new THREE.TextureLoader();
+                const texture = await new Promise((resolve, reject) => {
+                    loader.load(
+                        pngUrl,
+                        (tex) => {
+                            tex.encoding = THREE.sRGBEncoding;
+                            tex.minFilter = THREE.LinearFilter;
+                            tex.magFilter = THREE.LinearFilter;
+                            tex.generateMipmaps = false;
+                            resolve(tex);
+                        },
+                        undefined,
+                        (err) => reject(err),
+                    );
+                });
+
+                // register font with loaded texture
+                ThreeMeshUI.FontLibrary.addFont(fontJson, texture);
+
+                // return family name if present
+                return fontJson && fontJson.info && fontJson.info.family
+                    ? fontJson.info.family
+                    : undefined;
+            }
+
+            // --- Create UI after font registration ---
+            function initUI(fontFamily) {
+                uiRoot.clear();
+
+                const helloBlock = new ThreeMeshUI.Block({
+                    width: 1.6,
+                    height: 0.45,
+                    padding: 0.05,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundOpacity: 0.0,
+                });
+
+                const helloText = new ThreeMeshUI.Text({
+                    content: "Hello World",
+                    fontSize: 0.12,
+                    fontFamily: fontFamily,
+                });
+
+                helloBlock.add(helloText);
+                helloBlock.position.set(0, 0.4, 0);
+                uiRoot.add(helloBlock);
+
+                const loginBlock = new ThreeMeshUI.Block({
+                    width: 1.2,
+                    height: 0.9,
+                    padding: 0.04,
+                    justifyContent: "center",
+                    alignItems: "stretch",
+                    flexDirection: "column",
+                    backgroundColor: new THREE.Color(0x222222),
+                    backgroundOpacity: 0.85,
+                    borderRadius: 0.03,
+                });
+
+                const loginTitle = new ThreeMeshUI.Text({
+                    content: "Login",
+                    fontSize: 0.09,
+                    fontFamily,
+                });
+                const spacer = new ThreeMeshUI.Block({
+                    height: 0.02,
+                    backgroundOpacity: 0,
+                });
+
+                const username = new ThreeMeshUI.Text({
+                    content: "Username: demo",
+                    fontSize: 0.06,
+                    fontFamily,
+                });
+                const password = new ThreeMeshUI.Text({
+                    content: "Password: ••••••",
+                    fontSize: 0.06,
+                    fontFamily,
+                });
+
+                loginBtnBlock = new ThreeMeshUI.Block({
+                    width: 0.9,
+                    height: 0.14,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: new THREE.Color(0x1e88e5),
+                    backgroundOpacity: 1,
+                    borderRadius: 0.02,
+                });
+                const loginBtnText = new ThreeMeshUI.Text({
+                    content: "Sign In",
+                    fontSize: 0.07,
+                    fontFamily,
+                });
+                loginBtnBlock.add(loginBtnText);
+
+                loginBlock.add(
+                    loginTitle,
+                    spacer,
+                    username,
+                    password,
+                    spacer,
+                    loginBtnBlock,
+                );
+                loginBlock.position.set(0, -0.25, 0);
+                uiRoot.add(loginBlock);
+
+                ThreeMeshUI.update();
+            }
+
+            // --- Load font then initialize UI (safe order) ---
+            (async () => {
+                try {
+                    const jsonUrl =
+                        "http://localhost:8010/proxy/three-mesh-ui/examples/assets/Roboto-msdf.json";
+                    const pngUrl =
+                        "http://localhost:8010/proxy/three-mesh-ui/examples/assets/Roboto-msdf.png";
+                    const family = await loadMsdfFont(jsonUrl, pngUrl);
+                    initUI(family);
+                } catch (err) {
+                    console.error("Font load failed:", err);
+                    initUI(undefined); // fallback
+                }
+            })();
+
+            // --- GLTF loader (module) ---
+            const gltfLoader = new GLTFLoader();
+            const gltfUrl =
+                "https://modelviewer.dev/shared-assets/models/Astronaut.glb";
+            gltfLoader.load(
+                gltfUrl,
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.scale.set(0.6, 0.6, 0.6);
+                    model.position.set(1.0, 0.6, -1.2);
+                    scene.add(model);
+                },
+                undefined,
+                (err) => {
+                    console.warn("GLTF load error", err);
+                },
+            );
+
+            // --- Raycasting for pointer interaction ---
+            const raycaster = new THREE.Raycaster();
+            const mouse = new THREE.Vector2();
+
+            function onPointerDown(event) {
+                if (!uiVisible) return;
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+
+                if (loginBtnBlock) {
+                    const intersects = raycaster.intersectObject(
+                        loginBtnBlock,
+                        true,
+                    );
+                    if (intersects.length > 0) {
+                        console.log("Login clicked: demo/demo");
+                        loginBtnBlock.set({
+                            backgroundColor: new THREE.Color(0x1565c0),
+                        });
+                        setTimeout(
+                            () =>
+                                loginBtnBlock.set({
+                                    backgroundColor: new THREE.Color(0x1e88e5),
+                                }),
+                            150,
+                        );
+                    }
+                }
+            }
+            window.addEventListener("pointerdown", onPointerDown);
+
+            // --- AR button wiring ---
+            const arButton = ARButton.createButton(renderer, {
+                requiredFeatures: ["hit-test"],
+            });
+            arButton.style.display = "none";
+            document.body.appendChild(arButton);
+
+            document
+                .getElementById("enter-ar")
+                .addEventListener("click", () => {
+                    const btn =
+                        document.querySelector(".webxr-button") || arButton;
+                    if (btn) btn.click();
+                });
+
+            document
+                .getElementById("toggle-ui")
+                .addEventListener("click", () => {
+                    uiVisible = !uiVisible;
+                    uiRoot.visible = uiVisible;
+                });
+
+            // --- Animation loop ---
+            const clock = new THREE.Clock();
+            function updateThreeMeshUI() {
+                ThreeMeshUI.update();
+            }
+
+            function animate() {
+                const dt = clock.getDelta();
+                cube.rotation.x += dt * 0.8;
+                cube.rotation.y += dt * 0.6;
+                uiRoot.rotation.y = Math.sin(clock.elapsedTime * 0.4) * 0.06;
+                updateThreeMeshUI();
+                renderer.render(scene, camera);
+            }
+            renderer.setAnimationLoop(animate);
+
+            // --- Resize ---
+            window.addEventListener("resize", () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // safety update
+            setTimeout(() => ThreeMeshUI.update(), 500);
+        </script>
+    </body>
+</html>
