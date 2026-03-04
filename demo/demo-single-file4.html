@@ -49,9 +49,7 @@
             ]);
 
             ThreeMeshUI.FontLibrary.addFont('Roboto', json, texture);
-            ThreeMeshUI.FontLibrary.setDefaultFont('Roboto');
-
-            console.log('Font registered successfully:', ThreeMeshUI.FontLibrary.getFont('Roboto') ? 'YES' : 'NO');
+            console.log('Roboto font preloaded successfully');
             return true;
         } catch (e) {
             console.error('Font load failed:', e);
@@ -97,22 +95,16 @@
         panel.position.set(0, 1.6, -1.6);
         scene.add(panel);
 
-        const title = new ThreeMeshUI.Text({
-            content: 'Login',
-            fontFamily: 'Roboto',
-            fontSize: 0.09,
-            fontColor: new THREE.Color(0xffffff)
-        });
-        panel.add(title);
+        panel.add(new ThreeMeshUI.Text({ content: 'Login', fontSize: 0.08, fontColor: new THREE.Color(0x00ffdd) }));
 
-        const row1 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x333344) });
-        row1.add(new ThreeMeshUI.Text({ content: 'Username: ', fontFamily: 'Roboto', fontColor: new THREE.Color(0xffffff) }));
-        row1.add(new ThreeMeshUI.Text({ content: 'demo@example.com', fontFamily: 'Roboto', fontColor: new THREE.Color(0x00ffdd) }));
+        const row1 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x444455) });
+        row1.add(new ThreeMeshUI.Text({ content: 'Username: ' }));
+        row1.add(new ThreeMeshUI.Text({ content: 'demo@example.com' }));
         panel.add(row1);
 
-        const row2 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x333344) });
-        row2.add(new ThreeMeshUI.Text({ content: 'Password: ', fontFamily: 'Roboto', fontColor: new THREE.Color(0xffffff) }));
-        row2.add(new ThreeMeshUI.Text({ content: '***********', fontFamily: 'Roboto', fontColor: new THREE.Color(0x00ffdd) }));
+        const row2 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x444455) });
+        row2.add(new ThreeMeshUI.Text({ content: 'Password: ' }));
+        row2.add(new ThreeMeshUI.Text({ content: '***********' }));
         panel.add(row2);
 
         const btn = new ThreeMeshUI.Block({
@@ -122,7 +114,7 @@
             justifyContent: 'center',
             backgroundColor: new THREE.Color(0x00cc77),
         });
-        btn.add(new ThreeMeshUI.Text({ content: 'LOGIN', fontFamily: 'Roboto', fontColor: new THREE.Color(0x000000) }));
+        btn.add(new ThreeMeshUI.Text({ content: 'LOGIN', fontColor: new THREE.Color(0x000000) }));
         panel.add(btn);
 
         btn.onSelect = () => alert('Login clicked! (demo)');
