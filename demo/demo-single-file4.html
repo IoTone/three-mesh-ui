@@ -1,212 +1,147 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>three-mesh-ui module demo (proxy)</title>
+    <meta charset="utf-8">
+    <title>three-mesh-ui Demo - Login Panel + AR Button (Import Map)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #111; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: #fff;
+            font-family: sans-serif;
+            z-index: 100;
+            pointer-events: none;
+        }
+    </style>
 
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #111;
-      color: #fff;
-      font-family: sans-serif;
-    }
-
-    #overlay {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      z-index: 10;
-      pointer-events: none;
-    }
-
-    #controls {
-      pointer-events: auto;
-      margin-top: 8px;
-      display: flex;
-      gap: 8px;
-    }
-
-    button {
-      padding: 6px 10px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-
-<body>
-  <div id="overlay">
-    <div>three-mesh-ui module demo (proxy)</div>
-    <div id="controls">
-      <button id="enter-ar">Enter AR</button>
-      <button id="toggle-ui">Toggle UI</button>
-    </div>
-  </div>
-  <script type="importmap">
-{
-  "imports": {
-    "three": "http://localhost:8010/proxy/three@0.132.2/build/three.module.js"
-  }
-}
-</script>
-
-  <script type="module">
-    /* ------------------------------------------------------------
-       IMPORTS (ALL VIA PROXY — VALID MODULE SPECIFIERS)
-    ------------------------------------------------------------ */
-    /*
-    "three": "https://unpkg.com/three@0.132.2/build/three.module.js",
-      "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.4.0/build/three-mesh-ui.module.js",
-      "three/examples/": "https://unpkg.com/three@0.132.2/examples/jsm/"
-      */
-    import * as THREE from
-      "http://localhost:8010/proxy/three@0.132.2/build/three.module.js";
-
-    import * as ThreeMeshUI from
-      "http://localhost:8010/proxy/three-mesh-ui@6.4.0/build/three-mesh-ui.module.js";
-
-    import { GLTFLoader } from
-      "http://localhost:8010/proxy/three@0.132.2/examples/jsm/loaders/GLTFLoader.js";
-
-    import { ARButton } from
-      "http://localhost:8010/proxy/three@0.132.2/examples/jsm/webxr/ARButton.js";
-
-    /* ------------------------------------------------------------
-       RENDERER / SCENE / CAMERA
-    ------------------------------------------------------------ */
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
-    document.body.appendChild(renderer.domElement);
-
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
-
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      window.innerWidth / window.innerHeight,
-      0.01,
-      100
-    );
-    camera.position.set(0, 1.6, 3);
-
-    /* ------------------------------------------------------------
-       LIGHTS
-    ------------------------------------------------------------ */
-
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0));
-
-    const dir = new THREE.DirectionalLight(0xffffff, 0.6);
-    dir.position.set(3, 10, 10);
-    scene.add(dir);
-
-    /* ------------------------------------------------------------
-       ROTATING CUBE
-    ------------------------------------------------------------ */
-
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(0.6, 0.6, 0.6),
-      new THREE.MeshStandardMaterial({
-        color: 0x2194ce,
-        roughness: 0.4,
-        metalness: 0.1
-      })
-    );
-    cube.position.set(-0.9, 1.2, -1.5);
-    scene.add(cube);
-
-    /* ------------------------------------------------------------
-       FONT REGISTRATION (MODULE API — URL STRINGS ONLY)
-    ------------------------------------------------------------ */
-
-    ThreeMeshUI.FontLibrary.addFont(
-      "http://localhost:8010/proxy/three-mesh-ui@8.0.0/examples/assets/Roboto-msdf.json",
-      "http://localhost:8010/proxy/three-mesh-ui@8.0.0/examples/assets/Roboto-msdf.png"
-    );
-
-    /* ------------------------------------------------------------
-       UI
-    ------------------------------------------------------------ */
-
-    const uiRoot = new THREE.Group();
-    uiRoot.position.set(0, 1.4, -1.5);
-    scene.add(uiRoot);
-
-    let uiVisible = true;
-
-    function initUI() {
-      const hello = new ThreeMeshUI.Block({
-        width: 1.6,
-        height: 0.45,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundOpacity: 0
-      });
-
-      hello.add(new ThreeMeshUI.Text({
-        content: "Hello World",
-        fontFamily: "Roboto",
-        fontSize: 0.12
-      }));
-
-      uiRoot.add(hello);
-      ThreeMeshUI.update();
-    }
-
-    initUI();
-
-    /* ------------------------------------------------------------
-       GLTF (PROXIED)
-    ------------------------------------------------------------ */
-
-    const loader = new GLTFLoader();
-    loader.load(
-      "http://localhost:8010/proxy/modelviewer.dev/shared-assets/models/Astronaut.glb",
-      gltf => {
-        gltf.scene.scale.set(0.6, 0.6, 0.6);
-        gltf.scene.position.set(1, 0.6, -1.2);
-        scene.add(gltf.scene);
+    <!-- ====================== IMPORT MAP ====================== -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "http://localhost:8010/proxy/three@0.139.0/build/three.module.js",
+        "three/": "http://localhost:8010/proxy/three@0.139.0/",
+        "three-mesh-ui": "http://localhost:8010/proxy/three-mesh-ui@6.4.0/build/three-mesh-ui.module.js"
       }
-    );
+    }
+    </script>
+</head>
+<body>
+<div id="info">three-mesh-ui + Import Map - Login Panel + AR Button</div>
 
-    /* ------------------------------------------------------------
-       AR
-    ------------------------------------------------------------ */
+<script type="module">
+    import * as THREE from 'three';
+    import ThreeMeshUI from 'three-mesh-ui';
+    import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
-    const arButton = ARButton.createButton(renderer, { requiredFeatures: ["hit-test"] });
-    arButton.style.display = "none";
-    document.body.appendChild(arButton);
+    async function preloadFont() {
+        const base = 'http://localhost:8010/proxy/three-mesh-ui@6.4.0/examples/assets/';
 
-    document.getElementById("enter-ar").onclick = () => arButton.click();
-    document.getElementById("toggle-ui").onclick = () => {
-      uiVisible = !uiVisible;
-      uiRoot.visible = uiVisible;
-    };
+        try {
+            const [json, texture] = await Promise.all([
+                fetch(base + 'Roboto-msdf.json').then(r => r.json()),
+                new Promise((resolve, reject) => {
+                    const loader = new THREE.TextureLoader();
+                    loader.load(base + 'Roboto-msdf.png', resolve, undefined, reject);
+                })
+            ]);
 
-    /* ------------------------------------------------------------
-       LOOP
-    ------------------------------------------------------------ */
+            ThreeMeshUI.FontLibrary.addFont('Roboto', json, texture);
+            console.log('Roboto font preloaded successfully');
+            return true;
+        } catch (e) {
+            console.error('Font load failed:', e);
+            throw e;
+        }
+    }
 
-    const clock = new THREE.Clock();
-    renderer.setAnimationLoop(() => {
-      const dt = clock.getDelta();
-      cube.rotation.x += dt * 0.8;
-      cube.rotation.y += dt * 0.6;
-      ThreeMeshUI.update();
-      renderer.render(scene, camera);
+    async function init() {
+        await preloadFont();
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
+        camera.position.set(0, 1.6, 2.5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(devicePixelRatio);
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.xr.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+        dir.position.set(5, 10, 7);
+        scene.add(dir);
+
+        const model = new THREE.Mesh(
+            new THREE.TorusKnotGeometry(0.5, 0.18, 120, 32),
+            new THREE.MeshPhongMaterial({ color: 0x4488ff, shininess: 80 })
+        );
+        model.position.y = 1.4;
+        scene.add(model);
+
+        const panel = new ThreeMeshUI.Block({
+            width: 1.1,
+            height: 0.75,
+            padding: 0.04,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: new THREE.Color(0x222233),
+            fontFamily: 'Roboto',
+            fontSize: 0.055,
+        });
+        panel.position.set(0, 1.6, -1.6);
+        scene.add(panel);
+
+        panel.add(new ThreeMeshUI.Text({ content: 'Login', fontSize: 0.08, fontColor: new THREE.Color(0x00ffdd) }));
+
+        const row1 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x444455) });
+        row1.add(new ThreeMeshUI.Text({ content: 'Username: ' }));
+        row1.add(new ThreeMeshUI.Text({ content: 'demo@example.com' }));
+        panel.add(row1);
+
+        const row2 = new ThreeMeshUI.Block({ width: 0.95, height: 0.1, margin: 0.02, backgroundColor: new THREE.Color(0x444455) });
+        row2.add(new ThreeMeshUI.Text({ content: 'Password: ' }));
+        row2.add(new ThreeMeshUI.Text({ content: '***********' }));
+        panel.add(row2);
+
+        const btn = new ThreeMeshUI.Block({
+            width: 0.55,
+            height: 0.14,
+            margin: 0.04,
+            justifyContent: 'center',
+            backgroundColor: new THREE.Color(0x00cc77),
+        });
+        btn.add(new ThreeMeshUI.Text({ content: 'LOGIN', fontColor: new THREE.Color(0x000000) }));
+        panel.add(btn);
+
+        btn.onSelect = () => alert('Login clicked! (demo)');
+
+        const arButton = ARButton.createButton(renderer, { optionalFeatures: ['local-floor'] });
+        document.body.appendChild(arButton);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+
+        const clock = new THREE.Clock();
+        renderer.setAnimationLoop(() => {
+            model.rotation.y = clock.getElapsedTime() * 0.5;
+            ThreeMeshUI.update();
+            renderer.render(scene, camera);
+        });
+
+        console.log('Demo running - import map + font preloaded');
+    }
+
+    init().catch(err => {
+        console.error(err);
+        document.getElementById('info').innerHTML += '<br><span style="color:red">ERROR: ' + err.message + '</span>';
     });
-
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-  </script>
+</script>
 </body>
 </html>
