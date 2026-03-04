@@ -21,9 +21,9 @@
     <script type="importmap">
     {
       "imports": {
-        "three": "http://localhost:8010/proxy/three@0.139.0/build/three.module.js",
-        "three/": "http://localhost:8010/proxy/three@0.139.0/",
-        "three-mesh-ui": "http://localhost:8010/proxy/three-mesh-ui@6.4.0/build/three-mesh-ui.module.js"
+        "three": "https://unpkg.com/three@0.168.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.168.0/examples/jsm/",
+        "three-mesh-ui": "https://unpkg.com/three-mesh-ui@6.5.4/build/three-mesh-ui.module.js"
       }
     }
     </script>
@@ -34,10 +34,10 @@
 <script type="module">
     import * as THREE from 'three';
     import ThreeMeshUI from 'three-mesh-ui';
-    import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
+    import { ARButton } from 'three/addons/webxr/ARButton.js';
 
     async function preloadFont() {
-        const base = 'http://localhost:8010/proxy/three-mesh-ui@6.4.0/examples/assets/';
+        const base = 'https://unpkg.com/three-mesh-ui@6.5.4/examples/assets/';
 
         try {
             const [json, texture] = await Promise.all([
@@ -53,22 +53,44 @@
             return true;
         } catch (e) {
             console.error('Font load failed:', e);
+            const msg = 'Font load failed: ' + e.message;
+            document.getElementById('info').innerHTML += '<br><span style="color:red">' + msg + '</span>';
             throw e;
         }
     }
 
     async function init() {
-        await preloadFont();
+        try {
+            document.getElementById('info').innerHTML = 'Loading font...';
+            await preloadFont();
+            document.getElementById('info').innerHTML = 'Initializing scene...';
+        } catch (e) {
+            console.error('Init failed:', e);
+            document.getElementById('info').innerHTML = 'ERROR: ' + e.message;
+            return;
+        }
 
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 100);
         camera.position.set(0, 1.6, 2.5);
 
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setPixelRatio(devicePixelRatio);
         renderer.setSize(innerWidth, innerHeight);
         renderer.xr.enabled = true;
+        renderer.setClearColor(0x000000, 0);
         document.body.appendChild(renderer.domElement);
+
+        // Wireframe floor
+        const floorGeo = new THREE.PlaneGeometry(10, 10);
+        const floorMat = new THREE.LineBasicMaterial({ color: 0x00ff00, linewidth: 2 });
+        const floorWireframe = new THREE.LineSegments(
+            new THREE.EdgesGeometry(floorGeo),
+            floorMat
+        );
+        floorWireframe.rotation.x = -Math.PI / 2;
+        floorWireframe.position.y = 0;
+        scene.add(floorWireframe);
 
         scene.add(new THREE.AmbientLight(0xffffff, 0.7));
         const dir = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -119,8 +141,16 @@
 
         btn.onSelect = () => alert('Login clicked! (demo)');
 
-        const arButton = ARButton.createButton(renderer, { optionalFeatures: ['local-floor'] });
-        document.body.appendChild(arButton);
+        try {
+            const arButton = ARButton.createButton(renderer, {
+                optionalFeatures: ['hit-test', 'dom-overlay', 'dom-overlay-for-handheld-ar', 'local-floor'],
+                domOverlay: { root: document.body }
+            });
+            document.body.appendChild(arButton);
+        } catch (e) {
+            console.error('AR Button creation failed:', e);
+            document.getElementById('info').innerHTML += '<br><span style="color:red">AR not supported: ' + e.message + '</span>';
+        }
 
         window.addEventListener('resize', () => {
             camera.aspect = innerWidth / innerHeight;
@@ -129,19 +159,29 @@
         });
 
         const clock = new THREE.Clock();
-        renderer.setAnimationLoop(() => {
+
+        renderer.setAnimationLoop((time, frame) => {
             model.rotation.y = clock.getElapsedTime() * 0.5;
             ThreeMeshUI.update();
             renderer.render(scene, camera);
         });
 
+        document.getElementById('info').innerHTML = '✓ Demo running - AR ready';
         console.log('Demo running - import map + font preloaded');
     }
 
     init().catch(err => {
-        console.error(err);
-        document.getElementById('info').innerHTML += '<br><span style="color:red">ERROR: ' + err.message + '</span>';
+        console.error('Init error:', err);
+        document.getElementById('info').innerHTML = '❌ ERROR: ' + (err.message || String(err));
     });
+
+    // Safety timeout to show if nothing happens
+    setTimeout(() => {
+        const info = document.getElementById('info');
+        if (info.innerHTML.includes('three-mesh-ui + Import Map')) {
+            info.innerHTML += '<br><span style="color:orange">Still loading... check browser console</span>';
+        }
+    }, 3000);
 </script>
 </body>
 </html>
